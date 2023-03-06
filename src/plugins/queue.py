@@ -26,14 +26,19 @@ async def _(bot: Bot, event: Event, state: T_State):
     regex = "^(.+)机(\d+)卡$"
     res = re.match(regex, str(event.get_message()).lower()).groups()
     command = res[0]
-    number = res[1]
-    result = set_player(command, int(number))
-    if not result['error']:
+    number = int(res[1])
+    if number > 20:
         msg = MessageSegment("text", {
-            "text": build_msg(result['data'])
+            "text": '单次加卡不能超过20张。若出现排队超过20人的情况，请分次添加。'
         })
     else:
-        msg = MessageSegment("text", {
-            "text": result['error']
-        })
+        result = set_player(command, number)
+        if not result['error']:
+            msg = MessageSegment("text", {
+                "text": build_msg(result['data'])
+            })
+        else:
+            msg = MessageSegment("text", {
+                "text": result['error']
+            })
     await player_cal.send(Message([msg]))
