@@ -8,6 +8,7 @@ def get_all():
 
 def set_player(command, number):
     origin = Data.get_data()
+    number = 0 if number <= 0 else number
     data = {
         'count': number,
         'updateTime': time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
