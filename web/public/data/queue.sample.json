@@ -1,7 +1,10 @@
 {
     "maxCapacity": 8,
     "cabinets": {
-        "left": {"count": 0, "updateTime": "0000-00-00 00:00:00"},
-        "right": {"count": 0, "updateTime": "2023-03-06 00:00:00"}
+        "WD_A": {"count": 0, "updateTime": "0000-00-00 00:00:00"},
+        "DRF_A": {"count": 0, "updateTime": "0000-00-00 00:00:00"},
+        "CG_A": {"count": 0, "updateTime": "0000-00-00 00:00:00"},
+        "NZC_A": {"count": 0, "updateTime": "0000-00-00 00:00:00"},
+        "NZC_B": {"count": 0, "updateTime": "0000-00-00 00:00:00"}
     }
 }
