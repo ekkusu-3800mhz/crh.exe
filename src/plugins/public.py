@@ -10,17 +10,19 @@ async def preprocessor(bot, event, state):
     if hasattr(event, 'message_type') and event.message_type == "private" and event.sub_type != "friend":
         raise IgnoredException("not reply group temp message")
 
+
+# 发送帮助信息
         
 help = on_command('帮助')
-
 
 @help.handle()
 async def _(bot: Bot, event: Event, state: T_State):
     help_str = '''CRH.EXE implements mai-bot
 
-本排卡插件仅限疯狂牛仔城店内使用，可用指令如下：
-· 牛几卡：查询两组机台的当前人数。
-· [左/右]机<人数>卡：设置左/右机台的当前人数。
+本排卡插件可更新清远全域舞萌DX的排队人数，可用指令如下：
+· 机厅几卡：查询所有机台的排队情况。
+· <店铺机台><人数>卡：设置指定店铺，指定机台的当前人数。
+参考名称：牛左机、牛右机、万达、城广、大润发等。
 '''
     await help.send(Message([
         MessageSegment("text", {
@@ -35,7 +37,6 @@ async def _group_poke(bot: Bot, event: Event) -> bool:
 
 
 poke = on_notice(rule=_group_poke, priority=10, block=True)
-
 
 @poke.handle()
 async def _(bot: Bot, event: Event, state: T_State):

@@ -1,5 +1,5 @@
-def build_capacity(number, max_capacity):
-    percent = number / max_capacity
+def build_capacity(player_count, number, max_capacity):
+    percent = player_count / (number * max_capacity)
     if percent == 0:
         return '[□□□□□] 无人'
     elif 0 < percent <= 0.2:
@@ -13,15 +13,11 @@ def build_capacity(number, max_capacity):
     elif percent > 0.8:
         return '[■■■■■] 十分拥挤'
 
-def build_msg(data):
-    item = f'''[疯狂牛仔城左机（1P/2P）]
-当前人数：{data['cabinets']['left']['count']}人
-拥挤度：{build_capacity(data['cabinets']['left']['count'], data['maxCapacity'])}
-更新时间：{data['cabinets']['left']['updateTime']}
 
-[疯狂牛仔城右机（3P/4P）]
-当前人数：{data['cabinets']['right']['count']}人
-拥挤度：{build_capacity(data['cabinets']['right']['count'], data['maxCapacity'])}
-更新时间：{data['cabinets']['right']['updateTime']}
+def build_msg(info):
+    return f'''[{info['name']} ({info['uniqueName']})]
+当前人数：{info['playerCount']}人
+拥挤度：{build_capacity(info['playerCount'], info['number'], info['maxCapacity'])}
+更新时间：{info['updateTime']}
+
 '''
-    return item

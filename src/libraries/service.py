@@ -1,29 +1,53 @@
-import src.libraries.data as Data
+from dotenv import load_dotenv
+import aiohttp
+import os
 import time
+import json
 
 
-def get_all():
-    return Data.get_data()
+# 加载配置信息
+
+load_dotenv()
 
 
-def set_player(command, number):
-    origin = Data.get_data()
-    number = 0 if number <= 0 else number
-    data = {
-        'count': number,
-        'updateTime': time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+# 定义API请求地址构建函数
+
+def api_url(point: str) -> str:
+    base = os.environ.get('API_BASE_URL')
+    return str(base + "/" + point)
+
+
+# 获取所有机厅排队情况
+
+async def get_all():
+    async with aiohttp.ClientSession() as session:
+        async with session.get(api_url('bot/queue_info')) as res:
+            if res.status:
+                return json.loads(await res.text())
+            else:
+                return {
+                    "status": 500,
+                    "data": {
+                        "error": "HTTP request failed",
+                    },
+                }
+
+
+# 设置指定机厅的人数
+
+async def set_player(command, number):
+    payload = {
+        "unique_name": command,
+        "player_count": number,
     }
-    if command == '左' or command == '右':
-        if command == '左':
-            origin['cabinets']['left'] = data
-        elif command == '右':
-            origin['cabinets']['right'] = data
-        Data.set_data(origin['cabinets'])
-        return {
-            'error': None,
-            'data': Data.get_data()
-        }
-    else:
-        return {
-            'error': '请输入正确的指令。指令格式请输入“帮助”查看。'
-        }
+    async with aiohttp.ClientSession() as session:
+        async with session.post(api_url('bot/queue_update'), data=payload) as res:
+            if res.status:
+                return json.loads(await res.text())
+            else:
+                return {
+                    "status": 500,
+                    "data": {
+                        "error": "HTTP request failed",
+                    },
+                }

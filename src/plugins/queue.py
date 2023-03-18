@@ -7,38 +7,46 @@ from nonebot.adapters.onebot.v11 import Event, Bot, Message, MessageSegment
 from src.libraries.service import get_all, set_player
 from src.libraries.msg_builder import build_msg
 
-all_stats = on_command('all_stats ', aliases={'牛几卡'})
+
+# 获取所有机厅排队人数
+
+all_stats = on_command('all_stats ', aliases={'机厅几卡'})
 
 @all_stats.handle()
 async def _(bot: Bot, event: Event, state: T_State):
-    result = get_all()
-    await all_stats.send(Message([
-        MessageSegment("text", {
-            "text": build_msg(result)
-        })
-    ]))
+    result = await get_all()
+    msg = []
+    if not result['data']['error']:
+        for info in result['data']['cabinetList']:
+            msg.append(MessageSegment("text", {
+                "text": build_msg(info),
+            }))
+    else:
+        msg.append(MessageSegment("text", {
+            "text": result['data']['error'],
+        }))
+    await all_stats.send(Message(msg))
 
 
-player_cal = on_regex(r"^(.+)机(\d+)卡$")
+# 设置指定机台的排队人数
+
+player_cal = on_regex(r"^(.+)(\d+)卡$")
 
 @player_cal.handle()
 async def _(bot: Bot, event: Event, state: T_State):
-    regex = "^(.+)机(\d+)卡$"
+    # 解构QQ消息正文，提取机台名称和排队人数
+    regex = "^(.+)(\d+)卡$"
     res = re.match(regex, str(event.get_message()).lower()).groups()
     command = res[0]
     number = int(res[1])
-    if number > 20:
+    # 设置该机台的排队人数
+    result = await set_player(command, number)
+    if not result['data']['error']:
         msg = MessageSegment("text", {
-            "text": '单次加卡不能超过20张。若出现排队超过20人的情况，请分次添加。'
+            "text": build_msg(result['data']['cabinetInfo']),
         })
     else:
-        result = set_player(command, number)
-        if not result['error']:
-            msg = MessageSegment("text", {
-                "text": build_msg(result['data'])
-            })
-        else:
-            msg = MessageSegment("text", {
-                "text": result['error']
-            })
+        msg = MessageSegment("text", {
+            "text": result['data']['error'],
+        })
     await player_cal.send(Message([msg]))
