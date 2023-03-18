@@ -1,12 +1,15 @@
 export interface IQueueInfo {
-    maxCapacity: number;
-    cabinets: {
-        left: IQueueInfoRow;
-        right: IQueueInfoRow;
+    status: number;
+    data: {
+        error: string | null;
+        cabinetList: IQueueInfoRow[];
     };
 };
 
 export interface IQueueInfoRow {
-    count: number;
-    updateTime: string | Date;
+    name: string;
+    number: number;
+    playerCount: number;
+    maxCapacity: number;
+    updateTime: string;
 };
