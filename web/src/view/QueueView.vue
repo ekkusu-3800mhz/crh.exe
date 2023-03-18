@@ -2,46 +2,50 @@
 
 import { ref } from 'vue';
 import axios, { type AxiosResponse } from 'axios';
-import type { IQueueInfo } from '@/interface/queue';
+import type { IQueueInfo, IQueueInfoRow } from '@/interface/queue';
 
 /* 渲染常量定义 */
 
-const queueInfo = ref<IQueueInfo>({
-  maxCapacity: 0,
-  cabinets: {
-    left: {count: 0, updateTime: "0000-00-00 00:00:00"},
-    right: {count: 0, updateTime: "0000-00-00 00:00:00"},
-  },
-});
+const queueInfo = ref<IQueueInfoRow[]>([]);
 
 /* 实用函数定义 */
 
-function parsePlayerCount(count: number): number {
-  if (queueInfo.value.maxCapacity === 0) {
+function parsePlayerCount(playerCount: number, number: number, maxCapacity: number): number {
+  if (maxCapacity === 0) {
     return 0;
   }
-  return count / queueInfo.value.maxCapacity;
+  return playerCount / (number * maxCapacity);
+}
+
+function calculateTimeDiff(timestamp: string): boolean {
+  let cabinetTimestamp = new Date(timestamp);
+  let currentTimestamp = new Date();
+  return (((currentTimestamp.getTime() - cabinetTimestamp.getTime()) / 1000) > 3600);
 }
 
 /* 获取初始数据 */
 
 axios({
-  url: `/data/queue.json?timestamp=${new Date().getTime()}`,
+  url: `http://widgets.live.qymai.xbuster.moe:12724/bot/queue_info?timestamp=${new Date().getTime()}`,
   method: 'GET',
 }).then((res: AxiosResponse<IQueueInfo>) => {
-  queueInfo.value = res.data;
+  if (!res.data.data.error) {
+    queueInfo.value = res.data.data.cabinetList;
+  }
 });
 
 /* 定时获取数据 */
 
-const QUEUE_REFRESH_INT = 15000;
+const QUEUE_REFRESH_INT = 5000;
 
 const queueInterval = setInterval(() => {
   axios({
-    url: `/data/queue.json?timestamp=${new Date().getTime()}`,
+    url: `http://widgets.live.qymai.xbuster.moe:12724/bot/queue_info?timestamp=${new Date().getTime()}`,
     method: 'GET',
   }).then((res: AxiosResponse<IQueueInfo>) => {
-    queueInfo.value = res.data;
+    if (!res.data.data.error) {
+      queueInfo.value = res.data.data.cabinetList;
+    }
   });
 }, QUEUE_REFRESH_INT);
 
@@ -49,49 +53,30 @@ const queueInterval = setInterval(() => {
 
 <template>
   <ul>
-    <li>
-      <template v-if="parsePlayerCount(queueInfo.cabinets.left.count) <= 0">
+    <li v-for="cabinet in queueInfo">
+      <template v-if="parsePlayerCount(cabinet.playerCount, cabinet.number, cabinet.maxCapacity) <= 0">
         <img src="/images/queue-0.png" class="player-count-img" alt="拥挤度">
       </template>
-      <template v-else-if="parsePlayerCount(queueInfo.cabinets.left.count) > 0 && parsePlayerCount(queueInfo.cabinets.left.count) <= 0.2">
+      <template v-else-if="parsePlayerCount(cabinet.playerCount, cabinet.number, cabinet.maxCapacity) > 0 && parsePlayerCount(cabinet.playerCount, cabinet.number, cabinet.maxCapacity) <= 0.2">
         <img src="/images/queue-1.png" class="player-count-img" alt="拥挤度">
       </template>
-      <template v-else-if="parsePlayerCount(queueInfo.cabinets.left.count) > 0.2 && parsePlayerCount(queueInfo.cabinets.left.count) <= 0.4">
+      <template v-else-if="parsePlayerCount(cabinet.playerCount, cabinet.number, cabinet.maxCapacity) > 0.2 && parsePlayerCount(cabinet.playerCount, cabinet.number, cabinet.maxCapacity) <= 0.4">
         <img src="/images/queue-2.png" class="player-count-img" alt="拥挤度">
       </template>
-      <template v-else-if="parsePlayerCount(queueInfo.cabinets.left.count) > 0.4 && parsePlayerCount(queueInfo.cabinets.left.count) <= 0.6">
+      <template v-else-if="parsePlayerCount(cabinet.playerCount, cabinet.number, cabinet.maxCapacity) > 0.4 && parsePlayerCount(cabinet.playerCount, cabinet.number, cabinet.maxCapacity) <= 0.6">
         <img src="/images/queue-3.png" class="player-count-img" alt="拥挤度">
       </template>
-      <template v-else-if="parsePlayerCount(queueInfo.cabinets.left.count) > 0.6 && parsePlayerCount(queueInfo.cabinets.left.count) <= 0.8">
+      <template v-else-if="parsePlayerCount(cabinet.playerCount, cabinet.number, cabinet.maxCapacity) > 0.6 && parsePlayerCount(cabinet.playerCount, cabinet.number, cabinet.maxCapacity) <= 0.8">
         <img src="/images/queue-4.png" class="player-count-img" alt="拥挤度">
       </template>
-      <template v-else-if="parsePlayerCount(queueInfo.cabinets.left.count) > 0.8">
+      <template v-else-if="parsePlayerCount(cabinet.playerCount, cabinet.number, cabinet.maxCapacity) > 0.8">
         <img src="/images/queue-5.png" class="player-count-img" alt="拥挤度">
       </template>
-      牛仔城非直播机<br>
-      {{queueInfo.cabinets.left.count}}人
-    </li>
-    <li>
-      <template v-if="parsePlayerCount(queueInfo.cabinets.right.count) <= 0">
-        <img src="/images/queue-0.png" class="player-count-img" alt="拥挤度">
+      {{cabinet.name}}<br>
+      {{cabinet.playerCount}}人
+      <template v-if="calculateTimeDiff(cabinet.updateTime)">
+        <span class="expire-notice">[时效性注意]</span>
       </template>
-      <template v-else-if="parsePlayerCount(queueInfo.cabinets.right.count) > 0 && parsePlayerCount(queueInfo.cabinets.right.count) <= 0.2">
-        <img src="/images/queue-1.png" class="player-count-img" alt="拥挤度">
-      </template>
-      <template v-else-if="parsePlayerCount(queueInfo.cabinets.right.count) > 0.2 && parsePlayerCount(queueInfo.cabinets.right.count) <= 0.4">
-        <img src="/images/queue-2.png" class="player-count-img" alt="拥挤度">
-      </template>
-      <template v-else-if="parsePlayerCount(queueInfo.cabinets.right.count) > 0.4 && parsePlayerCount(queueInfo.cabinets.right.count) <= 0.6">
-        <img src="/images/queue-3.png" class="player-count-img" alt="拥挤度">
-      </template>
-      <template v-else-if="parsePlayerCount(queueInfo.cabinets.right.count) > 0.6 && parsePlayerCount(queueInfo.cabinets.right.count) <= 0.8">
-        <img src="/images/queue-4.png" class="player-count-img" alt="拥挤度">
-      </template>
-      <template v-else-if="parsePlayerCount(queueInfo.cabinets.right.count) > 0.8">
-        <img src="/images/queue-5.png" class="player-count-img" alt="拥挤度">
-      </template>
-      牛仔城直播机<br>
-      {{queueInfo.cabinets.right.count}}人
     </li>
   </ul>
 </template>
@@ -111,6 +96,10 @@ li {
   color: #ffffff;
   text-shadow: #153644 0px 0px 4px;
   padding-bottom: 10px;
+}
+
+li > span.expire-notice {
+  color: #fff200;
 }
 
 img.player-count-img {
