@@ -2,4 +2,4 @@
 .code
 venv
 __pycache__
-data/queue.json
+.env
