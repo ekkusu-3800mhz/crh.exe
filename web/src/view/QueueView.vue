@@ -26,7 +26,7 @@ function calculateTimeDiff(timestamp: string): boolean {
 /* 获取初始数据 */
 
 axios({
-  url: `http://widgets.live.qymai.xbuster.moe:12724/bot/queue_info?timestamp=${new Date().getTime()}`,
+  url: `http://widgets.live.qymai.xbuster.moe:12724/bot/queue/maimai?timestamp=${new Date().getTime()}`,
   method: 'GET',
 }).then((res: AxiosResponse<IQueueInfo>) => {
   if (!res.data.data.error) {
@@ -40,7 +40,7 @@ const QUEUE_REFRESH_INT = 5000;
 
 const queueInterval = setInterval(() => {
   axios({
-    url: `http://widgets.live.qymai.xbuster.moe:12724/bot/queue_info?timestamp=${new Date().getTime()}`,
+    url: `http://widgets.live.qymai.xbuster.moe:12724/bot/queue/maimai?timestamp=${new Date().getTime()}`,
     method: 'GET',
   }).then((res: AxiosResponse<IQueueInfo>) => {
     if (!res.data.data.error) {
