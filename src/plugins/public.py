@@ -19,10 +19,13 @@ help = on_command('帮助')
 async def _(bot: Bot, event: Event, state: T_State):
     help_str = '''CRH.EXE implements mai-bot
 
-本排卡插件可更新清远全域舞萌DX的排队人数，可用指令如下：
-· 机厅几卡：查询所有机台的排队情况。
+本排卡插件可更新清远全域舞萌DX/中二节奏NEW的排队人数，可用指令如下：
+· 舞萌几卡：查询全域舞萌DX机台的排队情况。
+· 中二几卡：查询全域中二节奏NEW机台的排队情况。
 · <店铺机台><人数>卡：设置指定店铺，指定机台的当前人数。
-参考名称：牛左机、牛右机、万达、城广、大润发等。
+参考名称：牛(舞萌|中二)(左|右)机、万达、城广、大润发等。
+
+本bot还提供清远牛仔城舞萌直播间状态查询，输入“直播状态”即可查看开播情况。
 '''
     await help.send(Message([
         MessageSegment("text", {
