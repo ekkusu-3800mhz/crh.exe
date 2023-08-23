@@ -19,9 +19,23 @@ def api_url(point: str) -> str:
 
 # 获取所有机厅排队情况
 
-async def get_all():
+async def get_all_maimai():
     async with aiohttp.ClientSession() as session:
-        async with session.get(api_url('bot/queue_info')) as res:
+        async with session.get(api_url('bot/queue/maimai')) as res:
+            if res.status:
+                return json.loads(await res.text())
+            else:
+                return {
+                    "status": 500,
+                    "data": {
+                        "error": "HTTP request failed",
+                    },
+                }
+            
+
+async def get_all_chunithm():
+    async with aiohttp.ClientSession() as session:
+        async with session.get(api_url('bot/queue/chunithm')) as res:
             if res.status:
                 return json.loads(await res.text())
             else:
@@ -41,7 +55,7 @@ async def set_player(command, number):
         "player_count": number,
     }
     async with aiohttp.ClientSession() as session:
-        async with session.post(api_url('bot/queue_update'), data=payload) as res:
+        async with session.post(api_url('bot/queue/update'), data=payload) as res:
             if res.status:
                 return json.loads(await res.text())
             else:
